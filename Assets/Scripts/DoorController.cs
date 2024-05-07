@@ -50,6 +50,7 @@ public class DoorController : MonoBehaviour
         {
             if (keyController.code == code && !isOpen)
             {
+                GameManager.instance.PlaySound("door");
                 particleGenerator.Emit("unlock", transform.position, Quaternion.identity);
                 isOpen = true;
             }

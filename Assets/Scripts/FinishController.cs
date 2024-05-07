@@ -11,6 +11,7 @@ public class FinishController : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             onFinish?.Invoke();
+            GameManager.instance.PlaySound("level_complete");
             gameObject.GetComponent<Collider2D>().enabled = false;
 
         }

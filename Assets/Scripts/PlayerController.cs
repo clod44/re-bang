@@ -6,8 +6,10 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField]
     private SpriteRenderer spriteRenderer;
+    private GravityGunController gravityGunController;
     void Start()
     {
+        gravityGunController = GetComponentInChildren<GravityGunController>();
     }
 
     void Update()
@@ -19,6 +21,8 @@ public class PlayerController : MonoBehaviour
 
     public void FreezePlayer(bool freeze)
     {
+        if (gravityGunController != null)
+            gravityGunController.enabled = !freeze;
         GetComponent<Collider2D>().enabled = !freeze;
         GetComponent<Rigidbody2D>().isKinematic = freeze;
         if (freeze)

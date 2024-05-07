@@ -3,7 +3,7 @@ using UnityEngine;
 public class HealthController : MonoBehaviour
 {
     public float maxHealth = 100f;
-    //set get health
+    [SerializeField]
     private float _health;
     public float health
     {
@@ -22,10 +22,19 @@ public class HealthController : MonoBehaviour
             {
                 _health = Mathf.Clamp(value, 0f, maxHealth);
             }
+            if (OnHealthChange != null)
+            {
+                OnHealthChange(_health, maxHealth);
+            }
         }
     }
     public System.Action OnTakeDamage;
     public System.Action OnDie;
+
+    public delegate void HealthChangeDelegate(float newHealth, float maxHealth);
+    public HealthChangeDelegate OnHealthChange;
+
+    public bool isDead = false;
 
     void Start()
     {
@@ -38,10 +47,16 @@ public class HealthController : MonoBehaviour
         {
             OnTakeDamage();
         }
+        if (health <= 0f)
+        {
+            Die();
+        }
     }
 
     void Die()
     {
+        if (isDead) return;
+        isDead = true;
         if (OnDie != null)
         {
             OnDie();

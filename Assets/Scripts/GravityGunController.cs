@@ -9,6 +9,7 @@ public class GravityGunController : MonoBehaviour
     [SerializeField]
     private SpringJoint2D springJoint;
     private bool isGrabbing = false;
+    private ParticleSystem ps;
 
     [SerializeField]
     private LineRenderer lineRenderer;
@@ -16,8 +17,7 @@ public class GravityGunController : MonoBehaviour
     private Vector3[] linePositions = new Vector3[2];
     void Start()
     {
-
-
+        ps = GetComponentInChildren<ParticleSystem>();
     }
 
     void Update()
@@ -29,15 +29,23 @@ public class GravityGunController : MonoBehaviour
 
         if (isGrabbing)
         {
+            if (!ps.isPlaying)
+                ps.Play();
             linePositions[0] = transform.position;
             linePositions[1] = desiredPos.position;
             lineRenderer.SetPositions(linePositions);
+        }
+        else
+        {
+            if (!ps.isStopped)
+                ps.Stop();
         }
         lineRenderer.enabled = isGrabbing;
 
 
         if (!isGrabbing && Input.GetMouseButtonDown(0))
         {
+            enabled = true;
             RaycastHit2D hit = Physics2D.Raycast(transform.position, desiredPos.position - transform.position, Vector2.Distance(transform.position, desiredPos.position), LayerMask.GetMask("Grabbable"));
             if (hit)
             {

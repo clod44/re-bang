@@ -4,44 +4,62 @@ public class PlayerMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float jumpForce = 10f;
-    public float jumpDelay = 0.05f;
+    [SerializeField]
+    private float jumpDelay = 0.1f;
+    private float jumpT = 0f;
+    public float groundCheckDistance = 0.2f;
 
     private Rigidbody2D rb;
-    private Collider2D playerCollider;
     private bool isGrounded = false;
-    private float lastJumpTime = 0f;
 
-    [SerializeField]
-    private Transform groundCheck;
+    // Layer mask to exclude the player layer
+    private LayerMask playerLayerMask;
+    private ParticleGenerator particleGenerator;
 
+    private float moveInput = 0f;
+    private float footstepRate = 10f;
+    private float footstepT = 1f;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        playerCollider = GetComponent<Collider2D>();
+        playerLayerMask = ~LayerMask.GetMask("Player");
+        particleGenerator = GetComponentInChildren<ParticleGenerator>();
+        footstepT = 1f / footstepRate;
     }
 
+
+    void Update()
+    {
+        moveInput = Input.GetAxisRaw("Horizontal");
+
+        footstepT -= Time.deltaTime;
+        if (isGrounded && Mathf.Abs(rb.velocity.x) > 0.1f && footstepT <= 0)
+        {
+            GameManager.instance.PlaySound("footstep");
+            particleGenerator.Emit("footstep", transform.position - new Vector3(0f, 0.5f, 0f), Quaternion.identity);
+            footstepT = 1f / footstepRate;
+        }
+
+    }
     void FixedUpdate()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, 0.2f);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, playerLayerMask);
+        isGrounded = hit.collider != null;
 
-        isGrounded = false;
-        foreach (Collider2D collider in colliders)
-        {
-            if (collider != playerCollider && collider.enabled)
-            {
-                isGrounded = true;
-                break;
-            }
-        }
-
-        float moveInput = Input.GetAxisRaw("Horizontal");
         rb.AddForce(moveInput * moveSpeed * Time.fixedDeltaTime * Vector2.right, ForceMode2D.Force);
 
-        if (isGrounded && Time.time - lastJumpTime >= jumpDelay && Input.GetButtonDown("Jump"))
+        jumpT += Time.deltaTime;
+        if (isGrounded && jumpT >= jumpDelay && (Input.GetKey(KeyCode.W) || Input.GetButtonDown("Jump")))
         {
+            jumpT = 0f;
             Debug.Log("Jump");
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            lastJumpTime = Time.time; // Update last jump time
         }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(transform.position, transform.position + Vector3.down * groundCheckDistance);
     }
 }

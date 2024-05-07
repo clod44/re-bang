@@ -6,13 +6,17 @@ public class CameraController : MonoBehaviour
     public Transform target;
     public float smoothSpeed = 0.125f;
     public float mouseOffsetFactor = 0.1f;
+    private float initialZoom = 1f;
+    [SerializeField]
+    private float maxZoom = 20f;
 
-    private Vector3 initialPosition;
 
     void Start()
     {
-        target = GameObject.FindGameObjectWithTag("Player").transform;
-        initialPosition = transform.position;
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+            target = player.transform;
+        initialZoom = Camera.main.orthographicSize;
     }
 
     void LateUpdate()
@@ -33,6 +37,11 @@ public class CameraController : MonoBehaviour
 
         Vector3 mouseOffset = new Vector3(clampedX - 0.5f, clampedY - 0.5f, 0f) * mouseOffsetFactor;
         transform.position += mouseOffset;
+
+        float gameTime = GameManager.instance.gameTime;
+        float zoomFactor = Mathf.Clamp(gameTime, 0, 10) / 10f;
+        float zoomValue = Mathf.Lerp(initialZoom, maxZoom, zoomFactor);
+        Camera.main.orthographicSize = zoomValue;
     }
 
     public void Shake(float strength, float duration)
@@ -48,12 +57,10 @@ public class CameraController : MonoBehaviour
             float x = Random.Range(-1f, 1f) * strength;
             float y = Random.Range(-1f, 1f) * strength;
 
-            transform.position = initialPosition + new Vector3(x, y, 0f);
+            transform.position += new Vector3(x, y, 0f);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
-
-        transform.position = initialPosition;
     }
 }

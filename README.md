@@ -1,4 +1,6 @@
-# RE-BANG
+# RE-BANG 🥇
+Winner of 48h "10 Seconds" [ALKU GameJam](https://alkujam.raziyedemiralay.space/) 2024.
+
 2D unity platformer puzzle game made in 48 hours for a gamejamed themed "10 seconds"
 
 ## Contents
